@@ -3,10 +3,11 @@ from pathlib import Path
 import av 
 import csv
 
+video_path = Path(sys.argv[1])
+output_dir = Path("outputs") / video_path.stem
+output_dir.mkdir(parents=True ,exist_ok=True)
 
-output_dir = Path("outputs-first-run")
-output_dir.mkdir(exist_ok=True)
-with av.open(sys.argv[1]) as container:
+with av.open(str(video_path)) as container:
     next_sample_s = 0
     rows = []
 
