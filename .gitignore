@@ -1,6 +1,7 @@
 .venv/
 __pycache__/
-sample.mp4
-static.mp4
+/*.mp4
+/*.webm
+/compare_frames.py
 outputs/
 outputs-first-run/

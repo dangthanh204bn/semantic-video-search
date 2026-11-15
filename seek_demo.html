@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="vi">
+<meta charset="utf-8">
+<title>Hỏi đáp về video</title>
+
+<video id="player" src="/speech.webm" controls preload="metadata" width="640"></video>
+<form id="question-form">
+  <label for="question">Câu hỏi hoặc mô tả ảnh</label>
+  <input id="question" name="question" required>
+  <label for="speech-query">Lời thoại riêng khi ghép (không bắt buộc)</label>
+  <input id="speech-query" name="speech_query">
+  <label for="video-id">Video khi tìm cảnh</label>
+  <select id="video-id" name="video_id">
+    <option value="all">Tất cả video</option>
+  </select>
+  <button type="submit">Hỏi</button>
+  <button type="submit" value="frames">Tìm cảnh</button>
+  <button type="submit" value="multimodal">Ghép hình và lời thoại</button>
+</form>
+<p id="answer" role="status"></p>
+<div id="sources"></div>
+
+<script>
+  const player = document.getElementById("player");
+  const form = document.getElementById("question-form");
+  const answer = document.getElementById("answer");
+  const sources = document.getElementById("sources");
+  const submitButtons = form.querySelectorAll('button[type="submit"]');
+  const videosById = new Map();
+  const videoSelect = form.elements.video_id;
+
+  async function loadVideos() {
+  submitButtons.forEach((button) => { button.disabled = true; });
+  answer.textContent = "Đang tải danh sách video…";
+
+  try {
+    const response = await fetch("/api/videos");
+    if (!response.ok) throw new Error("Video catalog request failed");
+
+    const { videos } = await response.json();
+    if (videos.length === 0) {
+      answer.textContent = "Chưa có video trong danh sách.";
+      return;
+    }
+
+    for (const video of videos) {
+      videosById.set(video.video_id, video);
+      videoSelect.add(new Option(video.filename, video.video_id));
+    }
+
+    player.src = videos[0].url;
+    answer.textContent = "";
+    submitButtons.forEach((button) => { button.disabled = false; });
+  } catch {
+    answer.textContent = "Không tải được danh sách video. Hãy tải lại trang.";
+  }
+}
+
+loadVideos();
+  function playSource(source) {
+    const url = videosById.get(source.video_id)?.url;
+    if (!url) {
+        answer.textContent = "Không xác định được video của kết quả.";
+        return;
+    }
+  if (player.getAttribute("src") !== url) {
+    player.src = url;
+    player.load();
+  }
+
+  player.currentTime = source.start_s;
+  player.play().catch((error) =>{
+    if (error.name !== "AbortError") {
+        answer.textContent = "Không phát được video.";
+    }
+  });
+  }
+
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const question = form.elements.question.value.trim();
+    sources.replaceChildren();
+
+        const mode = event.submitter?.value;
+    const isFrameSearch = mode === "frames";
+    const isMultimodalSearch = mode === "multimodal";
+    const speechQuery = form.elements.speech_query.value.trim() || question;
+
+    if (!question) {
+    answer.textContent = "Nhập câu hỏi hoặc mô tả cảnh.";
+    return;
+    }
+
+    let endpoint = "/api/answer";
+    let body = { question };
+
+    if (isMultimodalSearch) {
+      endpoint = "/api/search-multimodal";
+      body = { visual_query: question, speech_query: speechQuery };
+    } else if (isFrameSearch) {
+      endpoint = "/api/search-frames";
+      body = { query: question, video_id: form.elements.video_id.value };
+    }
+
+    submitButtons.forEach((button) => { button.disabled = true; });
+    answer.textContent = "Đang tìm…";
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!response.ok) throw new Error("API request failed");
+
+      const result = await response.json();
+      let matches = isFrameSearch ? result.hits : result.sources;
+      if (isMultimodalSearch) {
+        matches = result.groups.flatMap((group) =>
+        group.matches.map((match) => ({
+            ...match,
+            video_id: group.speech_hit.video_id,
+        }))
+    );
+    }
+
+      if (isFrameSearch || isMultimodalSearch) {
+        answer.textContent = matches.length
+          ? `Tìm được ${matches.length} mốc gợi ý.`
+          : "Chưa tìm thấy cảnh phù hợp.";
+      } else {
+        answer.textContent = result.answer ?? "Chưa đủ bằng chứng trong đoạn tìm được.";
+      }
+
+      for (const source of matches) {
+        const button = document.createElement("button");
+        button.type = "button";
+        const digits = isFrameSearch || isMultimodalSearch ? 3 : 2;
+        const start = source.start_s.toFixed(digits);
+        const end = source.end_s.toFixed(digits);
+        const timeLabel = start === end ? `${start} giây` : `${start}–${end} giây`;
+        const videoLabel = videosById.get(source.video_id)?.filename ?? source.video_id;
+        button.textContent = isFrameSearch && body.video_id === "all"
+        ? `${videoLabel} · ${timeLabel}`
+        : timeLabel;
+        button.addEventListener("click", () => playSource(source));
+        sources.append(button);
+      }
+    } catch {
+      answer.textContent = "Không lấy được câu trả lời. Hãy thử lại.";
+    } finally {
+      submitButtons.forEach((button) => { button.disabled = false; });
+    }
+  });
+</script>
