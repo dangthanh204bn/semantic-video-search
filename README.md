@@ -92,20 +92,21 @@ Visual search uses the discovered library. Visual matches depend on the sampled 
 
 ### Visual search evaluation
 
-The local evaluation compares two phrasings of seven cases across `speech.webm`, `static.mp4`, and `sample.mp4`. Both runs use the same expected clips and timestamps, a score threshold of `0.28`, and suppression of results whose start times are less than 5 seconds apart within the same video.
+The local evaluation compares the original wording, manually written English, and Ollama translations for seven cases across `speech.webm`, `static.mp4`, and `sample.mp4`. All three runs use the same expected clips and timestamps, a score threshold of `0.28`, and suppression of results whose start times are less than 5 seconds apart within the same video.
 
-| Measure | Original (six Vietnamese, one English) | All English |
-| --- | --- | --- |
-| Queries with a matching scene and a hit in the top three | 4/5 | 5/5 |
-| Queries with no matching scene and an empty result list | 1/2 | 1/2 |
+| Measure | Original (six Vietnamese, one English) | Manual English | Ollama translation |
+| --- | --- | --- | --- |
+| Queries with a matching scene and a hit in the top three | 4/5 | 5/5 | 5/5 |
+| Queries with no matching scene and an empty result list | 1/2 | 1/2 | 1/2 |
 
-A hit must identify the expected video and overlap the annotated time span. The original white tanker query missed the scene at **11.011–17.017 s** in `sample.mp4`. Its English version ranked a matching frame first at **13.013 s** with a score of **0.3315**. The toothbrushing query returned handwashing frames in both runs.
+A hit must identify the expected video and overlap the annotated time span. The original white tanker query missed the scene at **11.011–17.017 s** in `sample.mp4`. Both English versions ranked the matching frame at **13.013 s** first, with scores of **0.3315** for the manual wording and **0.3201** for the Ollama translation. The toothbrushing query returned handwashing frames in all three runs.
 
-With Flask running, use the first command for the original queries and `--english` for the English versions. Edit the queries and expected intervals in [the evaluation script](evaluate_visual_search.py) when using different footage.
+Keep Flask running for all three commands. `--auto-english` also needs local Ollama with `qwen3:4b` installed. In that mode, [the evaluation script](evaluate_visual_search.py) translates each query before submitting it to the search API.
 
 ```powershell
 .\.venv\Scripts\python.exe -X utf8 .\evaluate_visual_search.py
 .\.venv\Scripts\python.exe -X utf8 .\evaluate_visual_search.py --english
+.\.venv\Scripts\python.exe -X utf8 .\evaluate_visual_search.py --auto-english
 ```
 
 ### Video RAG evaluation
@@ -212,20 +213,21 @@ Tìm kiếm hình ảnh chạy trên thư viện do Flask phát hiện. Kết qu
 
 ### Đánh giá tìm kiếm hình ảnh
 
-Bộ đánh giá cục bộ so sánh hai cách diễn đạt cho bảy ca trên ba video `speech.webm`, `static.mp4` và `sample.mp4`. Hai lượt dùng chung video và mốc thời gian kỳ vọng, ngưỡng điểm `0.28` và bước lọc các kết quả có mốc bắt đầu cách nhau dưới 5 giây trong cùng video.
+Bộ đánh giá cục bộ so sánh câu gốc, câu tiếng Anh viết tay và bản dịch Ollama cho bảy ca trên ba video `speech.webm`, `static.mp4` và `sample.mp4`. Cả ba lượt dùng chung video và mốc thời gian kỳ vọng, ngưỡng điểm `0.28` và bước lọc các kết quả có mốc bắt đầu cách nhau dưới 5 giây trong cùng video.
 
-| Tiêu chí | Bộ gốc (6 câu Việt, 1 câu Anh) | Toàn bộ bằng tiếng Anh |
-| --- | --- | --- |
-| Truy vấn có cảnh thật và tìm được cảnh trong ba kết quả đầu | 4/5 | 5/5 |
-| Truy vấn không có cảnh khớp và trả danh sách rỗng | 1/2 | 1/2 |
+| Tiêu chí | Bộ gốc (6 câu Việt, 1 câu Anh) | Tiếng Anh viết tay | Bản dịch Ollama |
+| --- | --- | --- | --- |
+| Truy vấn có cảnh thật và tìm được cảnh trong ba kết quả đầu | 4/5 | 5/5 | 5/5 |
+| Truy vấn không có cảnh khớp và trả danh sách rỗng | 1/2 | 1/2 | 1/2 |
 
-Một kết quả hợp lệ phải thuộc đúng video và giao với khoảng thời gian đã đối chiếu. Truy vấn xe bồn trắng gốc bỏ sót cảnh ở **11.011–17.017 giây** trong `sample.mp4`. Bản tiếng Anh xếp khung hình đúng tại **13.013 giây** lên đầu với điểm **0.3315**. Truy vấn đánh răng trả nhầm cảnh rửa tay trong cả hai lượt.
+Một kết quả hợp lệ phải thuộc đúng video và giao với khoảng thời gian đã đối chiếu. Truy vấn xe bồn trắng gốc bỏ sót cảnh ở **11.011–17.017 giây** trong `sample.mp4`. Cả hai câu tiếng Anh xếp khung hình đúng tại **13.013 giây** lên đầu, với điểm **0.3315** cho câu viết tay và **0.3201** cho bản dịch Ollama. Truy vấn đánh răng trả nhầm cảnh rửa tay trong cả ba lượt.
 
-Giữ Flask đang chạy. Dùng lệnh đầu cho bộ truy vấn gốc và thêm `--english` để chạy các câu tiếng Anh. Nếu dùng video khác, cập nhật các truy vấn và khoảng thời gian mong đợi trong [script đánh giá](evaluate_visual_search.py).
+Giữ Flask đang chạy khi dùng cả ba lệnh. Chế độ `--auto-english` cần thêm Ollama cục bộ với mô hình `qwen3:4b` đã cài. Ở chế độ đó, [script đánh giá](evaluate_visual_search.py) dịch từng câu rồi gửi câu dịch đến API tìm kiếm.
 
 ```powershell
 .\.venv\Scripts\python.exe -X utf8 .\evaluate_visual_search.py
 .\.venv\Scripts\python.exe -X utf8 .\evaluate_visual_search.py --english
+.\.venv\Scripts\python.exe -X utf8 .\evaluate_visual_search.py --auto-english
 ```
 
 ### Đánh giá Video RAG

@@ -2,6 +2,8 @@ import json
 from urllib.request import Request, urlopen
 from argparse import ArgumentParser
 
+from translate_query import translate_visual_query
+
 CASES = [
     (
         "Người mặc áo sọc đang rửa tay ở bồn inox",
@@ -37,12 +39,15 @@ CASES = [
 ]
 
 
-def main(use_english=False):
+def main(use_english=False, auto_english=False):
     positive_checks = []
     negative_checks = []
 
     for original_query, english_query, expected in CASES:
-        query = english_query if use_english else original_query
+        if auto_english:
+            query = translate_visual_query(original_query)
+        else:
+            query = english_query if use_english else original_query
         body = json.dumps({"query": query, "video_id": "all"}).encode("utf-8")
         request = Request(
             "http://127.0.0.1:5000/api/search-frames",
@@ -80,6 +85,8 @@ def main(use_english=False):
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--english", action="store_true")
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--english", action="store_true")
+    modes.add_argument("--auto-english", action="store_true")
     args = parser.parse_args()
-    main(use_english=args.english)
+    main(use_english=args.english, auto_english=args.auto_english)
