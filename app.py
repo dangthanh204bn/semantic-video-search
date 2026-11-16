@@ -7,6 +7,8 @@ from search_frames import (
     find_frame_candidates,
     find_frame_candidates_by_embedding,
 )
+from urllib.error import URLError
+from translate_query import translate_visual_query
 from video_rag import answer_question
 
 app = Flask(__name__)
@@ -119,26 +121,8 @@ def suppress_nearby_hits(hits, min_gap_s=5.0):
             kept.append(hit)
     return kept
 
-@app.post("/api/search-frames")
-def api_search_frames():
-    body = request.get_json(silent=True)
-    query = body.get("query") if isinstance(body, dict) else None
-
-    if not isinstance(query, str) or not query.strip():
-        return jsonify(error="Bạn cần nhập mô tả hình ảnh."), 400
-
-    video_id = body.get("video_id", "speech")
-    if video_id == "all":
-        selected_paths = image_index_paths.values()
-    elif isinstance(video_id, str) and video_id in image_index_paths:
-        selected_paths = [image_index_paths[video_id]]
-    else:
-        return jsonify(error="Video không có chỉ mục hình ảnh."), 400
-
-    if not selected_paths:
-        return jsonify(hits=[])
-
-    query_embedding = encode_frame_query(query.strip())
+def find_visual_hits(query, selected_paths):
+    query_embedding = encode_frame_query(query)
     hits = []
     for selected_path in selected_paths:
         candidates = find_frame_candidates_by_embedding(
@@ -151,7 +135,42 @@ def api_search_frames():
             for hit in candidate["hits"]:
                 hits.append({**hit, "score": candidate["score"]})
 
-    return jsonify(hits=suppress_nearby_hits(hits))
+    return suppress_nearby_hits(hits)
+
+@app.post("/api/search-frames")
+def api_search_frames():
+    body = request.get_json(silent=True)
+    query = body.get("query") if isinstance(body, dict) else None
+
+    if not isinstance(query, str) or not query.strip():
+        return jsonify(error="Bạn cần nhập mô tả hình ảnh."), 400
+    translate_on_miss = body.get("translate_on_miss", False)
+    if not isinstance(translate_on_miss, bool):
+        return jsonify(error="translate_on_miss phải là true hoặc false."), 400
+
+    video_id = body.get("video_id", "speech")
+    if video_id == "all":
+        selected_paths = image_index_paths.values()
+    elif isinstance(video_id, str) and video_id in image_index_paths:
+        selected_paths = [image_index_paths[video_id]]
+    else:
+        return jsonify(error="Video không có chỉ mục hình ảnh."), 400
+    if not selected_paths:
+        return jsonify(hits=[])
+    query = query.strip()
+    hits = find_visual_hits(query, selected_paths)
+    if hits or not translate_on_miss:
+        return jsonify(hits=hits)
+
+    try:
+        translated_query = translate_visual_query(query)
+    except (URLError, TimeoutError, ValueError):
+        return jsonify(hits=[], warning="Không thể dịch truy vấn qua Ollama.")
+
+    if translated_query != query:
+        hits = find_visual_hits(translated_query, selected_paths)
+
+    return jsonify(hits=hits, translated_query=translated_query)
 
 @app.post("/api/search-multimodal")
 def api_search_multimodal():

@@ -59,6 +59,8 @@ To add a transcript to an existing visual index, run the speech scripts directly
 
 Open [the local demo](http://127.0.0.1:5000/). Select a video or **Tất cả video**, enter a description of a scene in your clips, and click **Tìm cảnh**. Click a result to open the source video and seek to that moment.
 
+To enable an English retry through the API, add `"translate_on_miss": true` to the JSON body for `POST /api/search-frames`. If the original query returns an empty list, the API uses local Ollama with `qwen3:4b`. It searches the selected video scope again when the translation differs from the original query. The response includes `translated_query` after a successful translation.
+
 For **Hỏi** or **Ghép hình và lời thoại**, select a video with a transcript index. For **Hỏi**, enter a question about its speech. For combined search, enter a scene description and optionally provide separate speech wording. With **Tất cả video** selected, both speech modes use `speech.webm`.
 
 You can also search a single image index directly from PowerShell:
@@ -179,6 +181,8 @@ Script tạo một thư mục riêng trong `outputs/` cho mỗi tên video. Khi 
 ```
 
 Mở [trang demo cục bộ](http://127.0.0.1:5000/). Chọn một video hoặc **Tất cả video**, nhập mô tả về một cảnh trong các video của bạn rồi bấm **Tìm cảnh**. Bấm một kết quả để mở đúng video và tua tới mốc tương ứng.
+
+Để thử lại bằng tiếng Anh qua API, thêm `"translate_on_miss": true` vào JSON gửi tới `POST /api/search-frames`. Nếu câu gốc trả danh sách rỗng, API dùng Ollama cục bộ với `qwen3:4b`. API tìm lại trong phạm vi video đã chọn khi câu dịch khác câu gốc. Phản hồi có trường `translated_query` khi dịch thành công.
 
 Với **Hỏi** hoặc **Ghép hình và lời thoại**, chọn video đã có chỉ mục lời thoại. Với **Hỏi**, nhập một câu hỏi về lời thoại. Với tìm kiếm kết hợp, nhập mô tả cảnh và điền nội dung lời thoại riêng nếu cần. Khi chọn **Tất cả video**, cả hai chế độ dùng lời thoại đều lấy `speech.webm` làm mặc định.
 
