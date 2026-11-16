@@ -26,12 +26,23 @@ ollama pull qwen3:4b
 
 The first indexing and search runs download the required Hugging Face models. Ollama serves Qwen locally at `127.0.0.1:11434`.
 
+#### Download the demo videos
+
+Save the downloads in the repository root under the filenames below. Start with `speech.webm` to try all three modes on one clip. The visual evaluation also uses the two MP4 clips.
+
+| Save as | Source and creator | Download |
+| --- | --- | --- |
+| `speech.webm` | [SFDPH WASH HANDS VIETNAMESE](https://commons.wikimedia.org/wiki/File:20200303_-_SFGovTV_-_SFDPH_WASH_HANDS_VIETNAMESE.webm) by San Francisco Government Television, [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) | [Original WebM](https://upload.wikimedia.org/wikipedia/commons/5/56/20200303_-_SFGovTV_-_SFDPH_WASH_HANDS_VIETNAMESE.webm) |
+| `sample.mp4` | [Cars Waiting in a Traffic Light](https://www.pexels.com/video/cars-waiting-in-a-traffic-light-5675618/) by Erkan Avanoğlu, [Pexels License](https://www.pexels.com/license/) | [1920 × 1080 MP4](https://videos.pexels.com/video-files/5675618/5675618-hd_1920_1080_30fps.mp4) |
+| `static.mp4` | [A Glass on the Table](https://www.pexels.com/video/a-glass-on-the-table-6801658/) by Artem Podrez, [Pexels License](https://www.pexels.com/license/) | [2160 × 3840 MP4](https://videos.pexels.com/video-files/6801658/6801658-uhd_2160_3840_30fps.mp4) |
+
 #### Index videos
 
-Place MP4 or WebM files in the repository root. Run the image indexer once for each file using its actual name. For example, start with `sample.mp4`.
+For the two additional clips used in the visual evaluation, generate their image indexes.
 
 ```powershell
 .\.venv\Scripts\python.exe -X utf8 .\index_video.py .\sample.mp4
+.\.venv\Scripts\python.exe -X utf8 .\index_video.py .\static.mp4
 ```
 
 Flask discovers videos with a complete image index at startup. Restart Flask after indexing a new video. Use distinct filename stems for your clips because each stem is a video ID and identifies an output directory. The ID `all` is reserved for the library-wide search. Source videos and generated indexes stay local.
@@ -62,6 +73,14 @@ Open [the local demo](http://127.0.0.1:5000/). Select a video or **Tất cả vi
 For **Tìm cảnh**, select **Thử tìm lại bằng tiếng Anh khi chưa thấy cảnh** to enable an English retry. If the original query returns an empty list, the app uses local Ollama with `qwen3:4b` and searches the selected video scope again when the translation differs from the original query. API clients can add `"translate_on_miss": true` to the JSON body for `POST /api/search-frames`. The response includes `translated_query` after a successful translation.
 
 For **Hỏi** or **Ghép hình và lời thoại**, select a video with a transcript index. For **Hỏi**, enter a question about its speech. For combined search, enter a scene description and optionally provide separate speech wording. With **Tất cả video** selected, both speech modes use `speech.webm`.
+
+With `speech.webm` selected, try these example queries.
+
+| Mode | Input | Expected result on the demo clip |
+| --- | --- | --- |
+| **Tìm cảnh** | `Người mặc áo sọc đang rửa tay ở bồn inox` | Top result near **16.003 s** |
+| **Ghép hình và lời thoại** | Same scene description, with `Chà tay ít nhất 20 giây` in the speech field | Frames near **16.003 s** and **17.003 s** within the matching speech segment |
+| **Hỏi** | `Nên chà tay trong bao nhiêu giây?` | `Chà tay ít nhất 20 giây`, citing **15.08–22.08 s** |
 
 You can also search a single image index directly from PowerShell:
 
@@ -149,12 +168,23 @@ ollama pull qwen3:4b
 
 Trong lần đầu lập chỉ mục và tìm kiếm, ứng dụng tải các mô hình cần thiết từ Hugging Face. Ollama chạy Qwen cục bộ tại `127.0.0.1:11434`.
 
+#### Tải video demo
+
+Lưu các tệp tải về vào thư mục gốc dự án với đúng tên trong bảng. Dùng `speech.webm` để thử cả ba chế độ trên cùng một clip. Bộ đánh giá tìm kiếm hình ảnh sử dụng thêm hai clip MP4.
+
+| Tên lưu | Nguồn và tác giả | Tệp tải về |
+| --- | --- | --- |
+| `speech.webm` | [SFDPH WASH HANDS VIETNAMESE](https://commons.wikimedia.org/wiki/File:20200303_-_SFGovTV_-_SFDPH_WASH_HANDS_VIETNAMESE.webm) của San Francisco Government Television, [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) | [WebM gốc](https://upload.wikimedia.org/wikipedia/commons/5/56/20200303_-_SFGovTV_-_SFDPH_WASH_HANDS_VIETNAMESE.webm) |
+| `sample.mp4` | [Cars Waiting in a Traffic Light](https://www.pexels.com/video/cars-waiting-in-a-traffic-light-5675618/) của Erkan Avanoğlu, [giấy phép Pexels](https://www.pexels.com/license/) | [MP4 1920 × 1080](https://videos.pexels.com/video-files/5675618/5675618-hd_1920_1080_30fps.mp4) |
+| `static.mp4` | [A Glass on the Table](https://www.pexels.com/video/a-glass-on-the-table-6801658/) của Artem Podrez, [giấy phép Pexels](https://www.pexels.com/license/) | [MP4 2160 × 3840](https://videos.pexels.com/video-files/6801658/6801658-uhd_2160_3840_30fps.mp4) |
+
 #### Lập chỉ mục video
 
-Đặt các tệp MP4 hoặc WebM vào thư mục gốc của dự án. Chạy lệnh lập chỉ mục ảnh một lần cho mỗi tệp và dùng đúng tên tệp. Thử với `sample.mp4`.
+Nếu chạy bộ đánh giá hình ảnh, lập chỉ mục ảnh cho hai clip MP4 bổ sung.
 
 ```powershell
 .\.venv\Scripts\python.exe -X utf8 .\index_video.py .\sample.mp4
+.\.venv\Scripts\python.exe -X utf8 .\index_video.py .\static.mp4
 ```
 
 Khi khởi động, Flask tự nhận các video đã có đủ dữ liệu chỉ mục ảnh. Khởi động lại Flask sau khi lập chỉ mục cho video mới. Đặt tên gốc khác nhau cho mỗi video. Phần tên trước đuôi tệp được dùng làm mã video và tên thư mục đầu ra. Mã `all` dành cho tìm kiếm toàn thư viện. Video nguồn và các tệp chỉ mục được lưu trên máy của bạn.
@@ -185,6 +215,14 @@ Mở [trang demo cục bộ](http://127.0.0.1:5000/). Chọn một video hoặc 
 Khi dùng **Tìm cảnh**, chọn **Thử tìm lại bằng tiếng Anh khi chưa thấy cảnh** để bật chế độ thử lại. Nếu câu gốc trả danh sách rỗng, ứng dụng dùng Ollama cục bộ với `qwen3:4b` và tìm lại trong phạm vi video đã chọn khi câu dịch khác câu gốc. Khi gọi API trực tiếp, thêm `"translate_on_miss": true` vào JSON gửi tới `POST /api/search-frames`. Phản hồi có trường `translated_query` khi dịch thành công.
 
 Với **Hỏi** hoặc **Ghép hình và lời thoại**, chọn video đã có chỉ mục lời thoại. Với **Hỏi**, nhập một câu hỏi về lời thoại. Với tìm kiếm kết hợp, nhập mô tả cảnh và điền nội dung lời thoại riêng nếu cần. Khi chọn **Tất cả video**, cả hai chế độ dùng lời thoại đều lấy `speech.webm` làm mặc định.
+
+Chọn `speech.webm` rồi thử các câu sau.
+
+| Chế độ | Nội dung nhập | Kết quả kỳ vọng trên video demo |
+| --- | --- | --- |
+| **Tìm cảnh** | `Người mặc áo sọc đang rửa tay ở bồn inox` | Kết quả đầu gần **16.003 giây** |
+| **Ghép hình và lời thoại** | Cùng mô tả cảnh, điền `Chà tay ít nhất 20 giây` vào ô lời thoại | Các khung hình gần **16.003** và **17.003 giây** nằm trong đoạn lời thoại khớp |
+| **Hỏi** | `Nên chà tay trong bao nhiêu giây?` | `Chà tay ít nhất 20 giây`, dẫn nguồn **15.08–22.08 giây** |
 
 Bạn cũng có thể tìm trực tiếp trong một chỉ mục ảnh từ PowerShell.
 
