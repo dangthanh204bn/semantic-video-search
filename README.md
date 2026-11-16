@@ -2,6 +2,10 @@
 
 [English](#english) · [Tiếng Việt](#tieng-viet)
 
+![Tìm cảnh rửa tay với các nút mốc 21.003 và 27.003 giây](docs/demo-screenshot.jpg)
+
+Video frame by San Francisco Government Television. [SFDPH WASH HANDS VIETNAMESE](https://commons.wikimedia.org/wiki/File:20200303_-_SFGovTV_-_SFDPH_WASH_HANDS_VIETNAMESE.webm) · [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+
 ## English
 
 A local video search demo that finds moments from Vietnamese or English descriptions, answers questions from Vietnamese speech, and opens the corresponding timestamp in the right video.
