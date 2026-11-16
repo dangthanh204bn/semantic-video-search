@@ -9,10 +9,11 @@
   <input id="question" name="question" required>
   <label for="speech-query">Lời thoại riêng khi ghép (không bắt buộc)</label>
   <input id="speech-query" name="speech_query">
-  <label for="video-id">Video khi tìm cảnh</label>
-  <select id="video-id" name="video_id">
+  <label for="video-id">Video cho Tìm cảnh và Hỏi</label>
+  <select id="video-id" name="video_id" aria-describedby="video-help">
     <option value="all">Tất cả video</option>
   </select>
+  <small id="video-help">Khi chọn Tất cả video, nút Hỏi dùng speech.webm.</small>
   <button type="submit">Hỏi</button>
   <button type="submit" value="frames">Tìm cảnh</button>
   <button type="submit" value="multimodal">Ghép hình và lời thoại</button>
@@ -92,15 +93,18 @@ loadVideos();
     return;
     }
 
+    const videoId = videoSelect.value;
     let endpoint = "/api/answer";
     let body = { question };
 
     if (isMultimodalSearch) {
-      endpoint = "/api/search-multimodal";
-      body = { visual_query: question, speech_query: speechQuery };
+        endpoint = "/api/search-multimodal";
+        body = { visual_query: question, speech_query: speechQuery };
     } else if (isFrameSearch) {
       endpoint = "/api/search-frames";
-      body = { query: question, video_id: form.elements.video_id.value };
+      body = { query: question, video_id: videoId };
+    } else if (videoId !== "all") {
+        body = { question, video_id: videoId };
     }
 
     submitButtons.forEach((button) => { button.disabled = true; });
@@ -112,9 +116,11 @@ loadVideos();
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      if (!response.ok) throw new Error("API request failed");
-
       const result = await response.json();
+      if (!response.ok) {
+        answer.textContent = result?.error ?? "Không lấy được kết quả. Hãy thử lại.";
+        return;
+      }
       let matches = isFrameSearch ? result.hits : result.sources;
       if (isMultimodalSearch) {
         matches = result.groups.flatMap((group) =>

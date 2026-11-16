@@ -5,7 +5,7 @@ A local video search demo that finds moments from Vietnamese or English descript
 | Mode | What it does |
 | --- | --- |
 | **Tìm cảnh** | Search the frames of one video or the entire demo library. Results link directly to their timestamps. |
-| **Hỏi** | Retrieve Vietnamese transcript segments, have Qwen answer from them, and display timestamped sources. |
+| **Hỏi** | Ask about a selected video. Qwen answers from its Vietnamese transcript and the app displays timestamped sources. |
 | **Ghép hình và lời thoại** | Find overlapping visual and transcript matches in the same video. Enter a single query or provide separate wording for the speech search. |
 
 ## Run locally on Windows
@@ -32,7 +32,7 @@ Place MP4 or WebM files in the repository root. Run the image indexer once for e
 
 Flask discovers videos with a complete image index at startup. Restart Flask after indexing a new video. Use distinct filename stems for your clips because each stem is a video ID and identifies an output directory. The ID `all` is reserved for the library-wide search. Source videos and generated indexes stay local.
 
-For the speech modes, place a clip with Vietnamese speech at `speech.webm`. Use `--with-transcript` to build its visual index and transcript index together.
+For the default speech video and combined search, place a clip with Vietnamese speech at `speech.webm`. Use `--with-transcript` to build its visual index and transcript index together.
 
 ```powershell
 .\.venv\Scripts\python.exe -X utf8 .\index_video.py .\speech.webm --with-transcript
@@ -53,7 +53,9 @@ To add a transcript to an existing visual index, run the speech scripts directly
 .\.venv\Scripts\python.exe -X utf8 .\app.py
 ```
 
-Open [the local demo](http://127.0.0.1:5000/). Select a video or **Tất cả video**, enter a description of a scene in your clips, and click **Tìm cảnh**. Click a result to open the source video and seek to that moment. For **Hỏi**, enter a question about the speech in `speech.webm`.
+Open [the local demo](http://127.0.0.1:5000/). Select a video or **Tất cả video**, enter a description of a scene in your clips, and click **Tìm cảnh**. Click a result to open the source video and seek to that moment.
+
+For **Hỏi**, select a video with a transcript index and enter a question about its speech. With **Tất cả video** selected, **Hỏi** uses `speech.webm`.
 
 You can also search a single image index directly from PowerShell:
 
@@ -82,4 +84,4 @@ Omitting `video_id` selects `speech`. A video in the library without a transcrip
 - **Speech pipeline.** Faster-Whisper produces timestamped Vietnamese transcript segments. Multilingual E5 retrieves relevant segments. Qwen3 4B via Ollama generates an answer and selects evidence IDs. Python resolves the IDs to the original source timestamps.
 - **Playback.** Flask serves the video library and supports byte-range requests. The browser uses the result's video ID to select the file and seek to the supplied timestamp.
 
-Visual search uses the discovered library. The browser uses `speech.webm` for questions and combined search. Visual matches depend on the sampled frames and similarity threshold, so short actions can fall between samples.
+Visual search uses the discovered library. Combined search uses `speech.webm`. Visual matches depend on the sampled frames and similarity threshold, so short actions can fall between samples.
