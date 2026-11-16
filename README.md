@@ -55,6 +55,8 @@ For the default video used by the speech modes, place a clip with Vietnamese spe
 
 The indexer creates a new directory under `outputs/` for each video stem. With `--with-transcript`, an audio track is transcribed to `transcript.csv`. When the transcript contains speech, the indexer also creates `transcript_embedding.npz`. A clip without an audio track produces the visual index.
 
+Run indexing once per video filename. For later sessions, start Flask directly to reuse the index in `outputs/`.
+
 To add a transcript to an existing visual index, run the speech scripts directly.
 
 ```powershell
@@ -64,9 +66,13 @@ To add a transcript to an existing visual index, run the speech scripts directly
 
 #### Start the app
 
+If Ollama is stopped, run `ollama serve` in a separate PowerShell window.
+
 ```powershell
 .\.venv\Scripts\python.exe -X utf8 .\app.py
 ```
+
+Keep Flask running in this window. Open another PowerShell in the repository root for the API and evaluation commands below.
 
 Open [the local demo](http://127.0.0.1:5000/). Select a video or **Tất cả video**, enter a description of a scene in your clips, and click **Tìm cảnh**. Click a result to open the source video and seek to that moment.
 
@@ -197,6 +203,8 @@ Khi khởi động, Flask tự nhận các video đã có đủ dữ liệu ch�
 
 Script tạo một thư mục riêng trong `outputs/` cho mỗi tên video. Khi dùng `--with-transcript`, script chép lời từ luồng âm thanh vào `transcript.csv`. Nếu tìm thấy lời thoại, script tạo thêm `transcript_embedding.npz`. Video không có luồng âm thanh vẫn được lập chỉ mục ảnh.
 
+Lập chỉ mục một lần cho mỗi tên tệp video. Những lần sau, khởi động Flask để dùng lại chỉ mục trong `outputs/`.
+
 Để bổ sung lời thoại cho video đã có chỉ mục ảnh, chạy trực tiếp hai script xử lý lời thoại.
 
 ```powershell
@@ -206,9 +214,13 @@ Script tạo một thư mục riêng trong `outputs/` cho mỗi tên video. Khi 
 
 #### Khởi động ứng dụng
 
+Nếu Ollama đang tắt, chạy `ollama serve` trong một cửa sổ PowerShell riêng.
+
 ```powershell
 .\.venv\Scripts\python.exe -X utf8 .\app.py
 ```
+
+Giữ Flask chạy trong cửa sổ này. Mở PowerShell khác tại thư mục gốc dự án để chạy các lệnh gọi API và đánh giá bên dưới.
 
 Mở [trang demo cục bộ](http://127.0.0.1:5000/). Chọn một video hoặc **Tất cả video**, nhập mô tả về một cảnh trong các video của bạn rồi bấm **Tìm cảnh**. Bấm một kết quả để mở đúng video và tua tới mốc tương ứng.
 
