@@ -15,6 +15,10 @@
   </select>
   <small id="video-help">Khi chọn Tất cả video, Hỏi và tìm kết hợp dùng speech.webm.</small>
   <button type="submit">Hỏi</button>
+  <label>
+    <input type="checkbox" name="translate_on_miss">
+    Thử tìm lại bằng tiếng Anh khi chưa thấy cảnh
+  </label>
   <button type="submit" value="frames">Tìm cảnh</button>
   <button type="submit" value="multimodal">Ghép hình và lời thoại</button>
 </form>
@@ -105,7 +109,11 @@ loadVideos();
       }
     } else if (isFrameSearch) {
       endpoint = "/api/search-frames";
-      body = { query: question, video_id: videoId };
+      body = {
+        query: question,
+        video_id: videoId,
+        translate_on_miss: form.elements.translate_on_miss.checked,
+      };
     } else if (videoId !== "all") {
         body = { question, video_id: videoId };
     }
@@ -138,6 +146,9 @@ loadVideos();
         answer.textContent = matches.length
           ? `Tìm được ${matches.length} mốc gợi ý.`
           : "Chưa tìm thấy cảnh phù hợp.";
+        if (isFrameSearch && result.warning) {
+          answer.textContent += ` ${result.warning}`;
+        }
       } else {
         answer.textContent = result.answer ?? "Chưa đủ bằng chứng trong đoạn tìm được.";
       }
