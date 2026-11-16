@@ -92,19 +92,20 @@ Visual search uses the discovered library. Visual matches depend on the sampled 
 
 ### Visual search evaluation
 
-The local evaluation uses seven queries across `speech.webm`, `static.mp4`, and `sample.mp4`. Visual search uses a score threshold of `0.28` and suppresses results whose start times are less than 5 seconds apart within the same video.
+The local evaluation compares two phrasings of seven cases across `speech.webm`, `static.mp4`, and `sample.mp4`. Both runs use the same expected clips and timestamps, a score threshold of `0.28`, and suppression of results whose start times are less than 5 seconds apart within the same video.
 
-| Measure | Result |
-| --- | --- |
-| Queries with a matching scene and a hit in the top three | 4/5 |
-| Queries with no matching scene and an empty result list | 1/2 |
+| Measure | Original (six Vietnamese, one English) | All English |
+| --- | --- | --- |
+| Queries with a matching scene and a hit in the top three | 4/5 | 5/5 |
+| Queries with no matching scene and an empty result list | 1/2 | 1/2 |
 
-A hit must identify the expected video and overlap the annotated time span. The white tanker query missed the scene at **11.011–17.017 s** in `sample.mp4`. The toothbrushing query returned a handwashing frame at **10.003 s** in `speech.webm` with a score of **0.3142**.
+A hit must identify the expected video and overlap the annotated time span. The original white tanker query missed the scene at **11.011–17.017 s** in `sample.mp4`. Its English version ranked a matching frame first at **13.013 s** with a score of **0.3315**. The toothbrushing query returned handwashing frames in both runs.
 
-With Flask running, run the evaluation against the local demo clips. Edit the queries and expected intervals in [the evaluation script](evaluate_visual_search.py) when using different footage.
+With Flask running, use the first command for the original queries and `--english` for the English versions. Edit the queries and expected intervals in [the evaluation script](evaluate_visual_search.py) when using different footage.
 
 ```powershell
 .\.venv\Scripts\python.exe -X utf8 .\evaluate_visual_search.py
+.\.venv\Scripts\python.exe -X utf8 .\evaluate_visual_search.py --english
 ```
 
 ### Video RAG evaluation
@@ -211,19 +212,20 @@ Tìm kiếm hình ảnh chạy trên thư viện do Flask phát hiện. Kết qu
 
 ### Đánh giá tìm kiếm hình ảnh
 
-Bộ đánh giá cục bộ gồm bảy truy vấn trên ba video `speech.webm`, `static.mp4` và `sample.mp4`. Tìm kiếm dùng ngưỡng điểm `0.28` và lọc các kết quả có mốc bắt đầu cách nhau dưới 5 giây trong cùng một video.
+Bộ đánh giá cục bộ so sánh hai cách diễn đạt cho bảy ca trên ba video `speech.webm`, `static.mp4` và `sample.mp4`. Hai lượt dùng chung video và mốc thời gian kỳ vọng, ngưỡng điểm `0.28` và bước lọc các kết quả có mốc bắt đầu cách nhau dưới 5 giây trong cùng video.
 
-| Tiêu chí | Kết quả |
-| --- | --- |
-| Truy vấn có cảnh thật và tìm được cảnh trong ba kết quả đầu | 4/5 |
-| Truy vấn không có cảnh khớp và trả danh sách rỗng | 1/2 |
+| Tiêu chí | Bộ gốc (6 câu Việt, 1 câu Anh) | Toàn bộ bằng tiếng Anh |
+| --- | --- | --- |
+| Truy vấn có cảnh thật và tìm được cảnh trong ba kết quả đầu | 4/5 | 5/5 |
+| Truy vấn không có cảnh khớp và trả danh sách rỗng | 1/2 | 1/2 |
 
-Một kết quả hợp lệ phải thuộc đúng video và giao với khoảng thời gian đã đối chiếu. Truy vấn xe bồn trắng bỏ sót cảnh ở **11.011–17.017 giây** trong `sample.mp4`. Truy vấn đánh răng trả nhầm cảnh rửa tay ở **10.003 giây** trong `speech.webm` với điểm **0.3142**.
+Một kết quả hợp lệ phải thuộc đúng video và giao với khoảng thời gian đã đối chiếu. Truy vấn xe bồn trắng gốc bỏ sót cảnh ở **11.011–17.017 giây** trong `sample.mp4`. Bản tiếng Anh xếp khung hình đúng tại **13.013 giây** lên đầu với điểm **0.3315**. Truy vấn đánh răng trả nhầm cảnh rửa tay trong cả hai lượt.
 
-Giữ Flask đang chạy và dùng lệnh dưới đây để đánh giá trên ba video demo cục bộ. Nếu dùng video khác, cập nhật các truy vấn và khoảng thời gian mong đợi trong [script đánh giá](evaluate_visual_search.py).
+Giữ Flask đang chạy. Dùng lệnh đầu cho bộ truy vấn gốc và thêm `--english` để chạy các câu tiếng Anh. Nếu dùng video khác, cập nhật các truy vấn và khoảng thời gian mong đợi trong [script đánh giá](evaluate_visual_search.py).
 
 ```powershell
 .\.venv\Scripts\python.exe -X utf8 .\evaluate_visual_search.py
+.\.venv\Scripts\python.exe -X utf8 .\evaluate_visual_search.py --english
 ```
 
 ### Đánh giá Video RAG

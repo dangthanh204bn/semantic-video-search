@@ -1,22 +1,48 @@
 import json
 from urllib.request import Request, urlopen
+from argparse import ArgumentParser
 
 CASES = [
-    ("Người mặc áo sọc đang rửa tay ở bồn inox", ("speech", 15.0, 22.0)),
-    ("Chiếc ly màu trắng đặt trên bàn", ("static", 4.0, 9.0)),
-    ("A white cup on a white tray", ("static", 4.0, 9.0)),
-    ("Nhiều ô tô dừng đèn đỏ ở ngã tư", ("sample", 3.0, 19.1)),
-    ("Xe bồn màu trắng đi qua ngã tư", ("sample", 11.011, 17.017)),
-    ("Một con hổ chạy trong rừng", None),
-    ("Người mặc áo sọc đang đánh răng trước bồn rửa", None),
+    (
+        "Người mặc áo sọc đang rửa tay ở bồn inox",
+        "A person in a striped shirt washing their hands at a stainless steel sink",
+        ("speech", 15.0, 22.0),
+    ),
+    (
+        "Chiếc ly màu trắng đặt trên bàn",
+        "A white cup on a table",
+        ("static", 4.0, 9.0),
+    ),
+    (
+        "A white cup on a white tray",
+        "A white cup on a white tray",
+        ("static", 4.0, 9.0),
+    ),
+    (
+        "Nhiều ô tô dừng đèn đỏ ở ngã tư",
+        "Several cars stopped at a red light at an intersection",
+        ("sample", 3.0, 19.1),
+    ),
+    (
+        "Xe bồn màu trắng đi qua ngã tư",
+        "A white tanker truck driving through an intersection",
+        ("sample", 11.011, 17.017),
+    ),
+    ("Một con hổ chạy trong rừng", "A tiger running through a forest", None),
+    (
+        "Người mặc áo sọc đang đánh răng trước bồn rửa",
+        "A person in a striped shirt brushing their teeth in front of a sink",
+        None,
+    ),
 ]
 
 
-def main():
+def main(use_english=False):
     positive_checks = []
     negative_checks = []
 
-    for query, expected in CASES:
+    for original_query, english_query, expected in CASES:
+        query = english_query if use_english else original_query
         body = json.dumps({"query": query, "video_id": "all"}).encode("utf-8")
         request = Request(
             "http://127.0.0.1:5000/api/search-frames",
@@ -53,4 +79,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = ArgumentParser()
+    parser.add_argument("--english", action="store_true")
+    args = parser.parse_args()
+    main(use_english=args.english)
