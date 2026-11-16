@@ -11,7 +11,6 @@ from video_rag import answer_question
 
 app = Flask(__name__)
 project_dir = Path(__file__).resolve().parent
-index_path = project_dir / "outputs" / "speech" / "transcript_embedding.npz"
 
 @app.get("/")
 def home():
@@ -105,7 +104,6 @@ image_index_paths = {
     for video_id in video_files
 }
 
-image_index_path = image_index_paths.get("speech")
 image_score_threshold = 0.28
 
 def suppress_nearby_hits(hits, min_gap_s=5.0):
@@ -169,11 +167,20 @@ def api_search_multimodal():
     ):
         return jsonify(error="Bạn cần nhập mô tả hình ảnh và lời thoại."), 400
 
-    if image_index_path is None:
+    if "video_id" not in body and "speech" not in image_index_paths:
         return jsonify(groups=[])
 
+    video_id = body.get("video_id", "speech")
+    if not isinstance(video_id, str) or video_id not in image_index_paths:
+        return jsonify(error="Video không có trong danh sách."), 400
+
+    visual_index = image_index_paths[video_id]
+    transcript_index = visual_index.with_name("transcript_embedding.npz")
+    if not transcript_index.is_file():
+        return jsonify(error="Video chưa có chỉ mục lời thoại."), 404
+
     visual_candidates = find_frame_candidates(
-        image_index_path, visual_query.strip(), top_k=3
+        visual_index, visual_query.strip(), top_k=3
     )
     visual_candidates = [
         candidate for candidate in visual_candidates
@@ -182,7 +189,7 @@ def api_search_multimodal():
     if not visual_candidates:
         return jsonify(groups = [])
 
-    speech_hits = find_transcripts(index_path, speech_query.strip(), top_k=3)
+    speech_hits = find_transcripts(transcript_index, speech_query.strip(), top_k=3)
     groups = find_overlapping_hits(visual_candidates, speech_hits)
     return jsonify(groups=groups)
 

@@ -9,11 +9,11 @@
   <input id="question" name="question" required>
   <label for="speech-query">Lời thoại riêng khi ghép (không bắt buộc)</label>
   <input id="speech-query" name="speech_query">
-  <label for="video-id">Video cho Tìm cảnh và Hỏi</label>
+  <label for="video-id">Video</label>
   <select id="video-id" name="video_id" aria-describedby="video-help">
     <option value="all">Tất cả video</option>
   </select>
-  <small id="video-help">Khi chọn Tất cả video, nút Hỏi dùng speech.webm.</small>
+  <small id="video-help">Khi chọn Tất cả video, Hỏi và tìm kết hợp dùng speech.webm.</small>
   <button type="submit">Hỏi</button>
   <button type="submit" value="frames">Tìm cảnh</button>
   <button type="submit" value="multimodal">Ghép hình và lời thoại</button>
@@ -98,8 +98,11 @@ loadVideos();
     let body = { question };
 
     if (isMultimodalSearch) {
-        endpoint = "/api/search-multimodal";
-        body = { visual_query: question, speech_query: speechQuery };
+      endpoint = "/api/search-multimodal";
+      body = { visual_query: question, speech_query: speechQuery };
+      if (videoId !== "all") {
+        body.video_id = videoId;
+      }
     } else if (isFrameSearch) {
       endpoint = "/api/search-frames";
       body = { query: question, video_id: videoId };
