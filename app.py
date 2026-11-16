@@ -57,9 +57,16 @@ def api_answer():
     if not isinstance(question, str) or not question.strip():
         return jsonify(error= "Bạn cần nhập câu hỏi"), 400
 
-    result = answer_question(index_path, question.strip())
-    return jsonify(result)
+    video_id = body.get("video_id", "speech")
+    if not isinstance(video_id, str) or video_id not in video_files:
+        return jsonify(error="video không có trong danh sách."), 400
 
+    transcript_index = project_dir / "outputs" / video_id / "transcript_embedding.npz"
+    if not transcript_index.is_file():
+        return jsonify(error="video chưa có chỉ mục lời thoại."), 404
+
+    result = answer_question(transcript_index, question.strip())
+    return jsonify(result)
 
 def discover_index_videos(root):
     files_by_stem = {}

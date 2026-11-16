@@ -61,10 +61,25 @@ You can also search a single image index directly from PowerShell:
 .\.venv\Scripts\python.exe -X utf8 .\search_frames.py .\outputs\sample\image_embeddings.npz "Describe a scene in your video"
 ```
 
+### Ask about a selected video through the API
+
+With Flask running, send a question and the video ID. The ID is the filename stem of a video in the library. Create its transcript index with `--with-transcript` first.
+
+```powershell
+$body = @{ question = 'Nên chà tay trong bao nhiêu giây?'; video_id = 'speech' } | ConvertTo-Json
+$answer = Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:5000/api/answer' `
+    -ContentType 'application/json; charset=utf-8' `
+    -Body ([System.Text.Encoding]::UTF8.GetBytes($body))
+$answer.answer
+$answer.sources | Select-Object video_id, start_s, end_s
+```
+
+Omitting `video_id` selects `speech`. A video in the library without a transcript index returns HTTP `404`.
+
 ## How it works
 
 - **Visual pipeline.** PyAV samples timestamped frames. OpenCV groups similar frames and CLIP embeds the representatives. The search API encodes a query once, compares it across the selected indexes, filters weak results and suppresses nearby timestamps within each video.
 - **Speech pipeline.** Faster-Whisper produces timestamped Vietnamese transcript segments. Multilingual E5 retrieves relevant segments. Qwen3 4B via Ollama generates an answer and selects evidence IDs. Python resolves the IDs to the original source timestamps.
 - **Playback.** Flask serves the video library and supports byte-range requests. The browser uses the result's video ID to select the file and seek to the supplied timestamp.
 
-Visual search uses the discovered library. The speech modes use `speech.webm`. Visual matches depend on the sampled frames and similarity threshold, so short actions can fall between samples.
+Visual search uses the discovered library. The browser uses `speech.webm` for questions and combined search. Visual matches depend on the sampled frames and similarity threshold, so short actions can fall between samples.
