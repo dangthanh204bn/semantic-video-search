@@ -107,6 +107,16 @@ With Flask running, run the evaluation against the local demo clips. Edit the qu
 .\.venv\Scripts\python.exe -X utf8 .\evaluate_visual_search.py
 ```
 
+### Video RAG evaluation
+
+The local `speech.webm` evaluation checks three questions against answer wording and exact source timestamps. **Two of three cases passed**. The answer that needs two sources cites both expected segments, and the question without evidence returns `answer: null` and `sources: []`. The short handwashing question cites **15.08–22.08 s** correctly, but the answer `20` omits the minimum condition and the unit stated in the transcript.
+
+With Flask and Ollama running, run [the Video RAG evaluation](evaluate_video_rag.py).
+
+```powershell
+.\.venv\Scripts\python.exe -X utf8 .\evaluate_video_rag.py
+```
+
 ---
 
 <a name="tieng-viet"></a>
@@ -214,4 +224,14 @@ Giữ Flask đang chạy và dùng lệnh dưới đây để đánh giá trên 
 
 ```powershell
 .\.venv\Scripts\python.exe -X utf8 .\evaluate_visual_search.py
+```
+
+### Đánh giá Video RAG
+
+Bộ đánh giá trên `speech.webm` kiểm tra ba câu hỏi theo nội dung câu trả lời và mốc thời gian chính xác của nguồn. **Hai trong ba ca đạt**. Câu cần hai nguồn trích đúng cả hai đoạn. Câu thiếu bằng chứng trả `answer: null` và `sources: []`. Câu hỏi ngắn về thời gian chà tay dẫn đúng đoạn **15.08–22.08 giây**, nhưng câu trả lời `20` bỏ mất điều kiện «ít nhất» và đơn vị có trong lời thoại.
+
+Giữ Flask và Ollama đang chạy rồi gọi [script đánh giá Video RAG](evaluate_video_rag.py).
+
+```powershell
+.\.venv\Scripts\python.exe -X utf8 .\evaluate_video_rag.py
 ```
