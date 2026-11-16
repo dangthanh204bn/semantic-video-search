@@ -1,10 +1,13 @@
 import csv
 import subprocess
 import sys
+from argparse import ArgumentParser
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-def index_video(video_path, project_dir):
+import av
+
+def index_video(video_path, project_dir, with_transcript=False):
     if not video_path.is_file():
         raise SystemExit(f"Không tìm thấy video: {video_path}")
 
@@ -36,6 +39,26 @@ def index_video(video_path, project_dir):
         run_step("deduplicate_frames.py", frames_csv)
         run_step("embed_frames.py", staged_output / "frames_dedup.csv")
 
+        if with_transcript:
+            with av.open(str(video_path)) as container:
+                has_audio = bool(container.streams.audio)
+
+            if has_audio:
+                run_step("transcribe_video.py", video_path)
+                transcript_csv = staged_output / "transcript.csv"
+
+                with transcript_csv.open(newline="", encoding="utf-8") as manifest:
+                    has_speech = any(
+                        row["text"].strip() for row in csv.DictReader(manifest)
+                    )
+
+                if has_speech:
+                    run_step("embed_transcript.py", transcript_csv)
+                else:
+                    print("Không tìm thấy lời thoại. Đã tạo chỉ mục ảnh.")
+            else:
+                print("Video không có luồng âm thanh. Đã tạo chỉ mục ảnh.")
+
         if (
             not staged_output.resolve().is_relative_to(work_dir.resolve())
             or output_dir.resolve().parent != outputs_dir.resolve()
@@ -47,10 +70,14 @@ def index_video(video_path, project_dir):
     return output_dir / "image_embeddings.npz"
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        raise SystemExit('Cách chạy: python index_video.py "đường dẫn video"')
+    parser = ArgumentParser()
+    parser.add_argument("video_path", type=Path)
+    parser.add_argument("--with-transcript", action="store_true")
+    args = parser.parse_args()
 
     project_dir = Path(__file__).resolve().parent
-    video_path = Path(sys.argv[1]).expanduser().resolve()
-    index_path = index_video(video_path, project_dir)
+    video_path = args.video_path.expanduser().resolve()
+    index_path = index_video(
+        video_path, project_dir, with_transcript=args.with_transcript
+    )
     print(f"Đã tạo chỉ mục: {index_path}")

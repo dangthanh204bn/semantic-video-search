@@ -32,15 +32,20 @@ Place MP4 or WebM files in the repository root. Run the image indexer once for e
 
 Flask discovers videos with a complete image index at startup. Restart Flask after indexing a new video. Use distinct filename stems for your clips because each stem is a video ID and identifies an output directory. The ID `all` is reserved for the library-wide search. Source videos and generated indexes stay local.
 
-For the speech modes, place a clip with Vietnamese speech at `speech.webm`. Run its image indexing command first, then create the transcript and transcript embeddings.
+For the speech modes, place a clip with Vietnamese speech at `speech.webm`. Use `--with-transcript` to build its visual index and transcript index together.
 
 ```powershell
-.\.venv\Scripts\python.exe -X utf8 .\index_video.py .\speech.webm
+.\.venv\Scripts\python.exe -X utf8 .\index_video.py .\speech.webm --with-transcript
+```
+
+The indexer creates a new directory under `outputs/` for each video stem. With `--with-transcript`, an audio track is transcribed to `transcript.csv`. When the transcript contains speech, the indexer also creates `transcript_embedding.npz`. A clip without an audio track produces the visual index.
+
+To add a transcript to an existing visual index, run the speech scripts directly.
+
+```powershell
 .\.venv\Scripts\python.exe -X utf8 .\transcribe_video.py .\speech.webm
 .\.venv\Scripts\python.exe -X utf8 .\embed_transcript.py .\outputs\speech\transcript.csv
 ```
-
-Run the visual indexing commands first. The indexer creates a new directory under `outputs/` for each video stem. The transcript steps then write into `outputs/speech/`.
 
 ### Start the app
 
