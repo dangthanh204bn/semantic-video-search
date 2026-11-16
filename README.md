@@ -109,7 +109,7 @@ With Flask running, run the evaluation against the local demo clips. Edit the qu
 
 ### Video RAG evaluation
 
-The local `speech.webm` evaluation checks three questions against answer wording and exact source timestamps. **Two of three cases passed**. The answer that needs two sources cites both expected segments, and the question without evidence returns `answer: null` and `sources: []`. The short handwashing question cites **15.08–22.08 s** correctly, but the answer `20` omits the minimum condition and the unit stated in the transcript.
+The local `speech.webm` evaluation checks answer content and exact source timestamps. **All three cases passed with `qwen3:4b`**, up from two of three before the prompt update. The short handwashing question now returns “at least 20 seconds” in Vietnamese and cites **15.08–22.08 s**. The two-part question cites both expected segments, and the question without evidence returns `answer: null` and `sources: []`.
 
 With Flask and Ollama running, run [the Video RAG evaluation](evaluate_video_rag.py).
 
@@ -228,7 +228,7 @@ Giữ Flask đang chạy và dùng lệnh dưới đây để đánh giá trên 
 
 ### Đánh giá Video RAG
 
-Bộ đánh giá trên `speech.webm` kiểm tra ba câu hỏi theo nội dung câu trả lời và mốc thời gian chính xác của nguồn. **Hai trong ba ca đạt**. Câu cần hai nguồn trích đúng cả hai đoạn. Câu thiếu bằng chứng trả `answer: null` và `sources: []`. Câu hỏi ngắn về thời gian chà tay dẫn đúng đoạn **15.08–22.08 giây**, nhưng câu trả lời `20` bỏ mất điều kiện «ít nhất» và đơn vị có trong lời thoại.
+Bộ đánh giá trên `speech.webm` kiểm tra nội dung câu trả lời và mốc thời gian chính xác của nguồn. **Cả ba ca đều đạt với `qwen3:4b`**, tăng từ hai ca trước khi cập nhật prompt. Câu hỏi ngắn về thời gian chà tay trả lời «ít nhất 20 giây» và dẫn đúng đoạn **15.08–22.08 giây**. Câu hỏi hai ý trích đúng cả hai đoạn. Câu thiếu bằng chứng trả `answer: null` và `sources: []`.
 
 Giữ Flask và Ollama đang chạy rồi gọi [script đánh giá Video RAG](evaluate_video_rag.py).
 

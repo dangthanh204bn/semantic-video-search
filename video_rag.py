@@ -25,7 +25,11 @@ def answer_question(index_path, question):
                     "Giữ nguyên số liệu, điều kiện và các lựa chọn. "
                     "Ghi mã của mọi đoạn dùng để trả lời vào evidence_ids. "
                     "Nếu thiếu dữ kiện cho bất kỳ ý nào trong câu hỏi, "
-                    "đặt answer thành null và evidence_ids thành []."
+                    "đặt answer thành null và evidence_ids thành []. "
+                    "Mỗi số liệu trong answer phải là một cụm đầy đủ gồm điều kiện "
+                    "(nếu lời chép có), giá trị và đơn vị. "
+                    "Ví dụ, với lời chép «đợi ít nhất 5 phút» và câu hỏi "
+                    "«đợi bao nhiêu phút?», answer là «Đợi ít nhất 5 phút»."
                 ),
             },
             {
