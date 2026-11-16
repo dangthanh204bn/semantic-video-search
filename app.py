@@ -60,17 +60,45 @@ def api_answer():
     result = answer_question(index_path, question.strip())
     return jsonify(result)
 
-video_files = {
-    Path(filename).stem: project_dir / filename
-    for filename in ("speech.webm", "static.mp4", "sample.mp4")
-}
+
+def discover_index_videos(root):
+    files_by_stem = {}
+    media_paths = sorted(
+        root.iterdir(),
+        key=lambda path: (path.stem.casefold() != "speech", path.name.casefold()),
+    )
+    for path in media_paths:
+        if not path.is_file() or path.suffix.lower() not in {".mp4", ".webm"}:
+            continue
+
+        stem = path.stem.casefold()
+        if stem != "all":
+            files_by_stem.setdefault(stem, []).append(path)
+
+    videos = {}
+    for paths in files_by_stem.values():
+        if len(paths) != 1:
+            continue
+
+        path = paths[0]
+        index_dir = root / "outputs" / path.stem
+        if (
+            (index_dir / "image_embeddings.npz").is_file()
+            and (index_dir / "frames_dedup.csv").is_file()
+        ):
+            videos[path.stem] = path
+
+    return videos
+
+
+video_files = discover_index_videos(project_dir)
 
 image_index_paths = {
     video_id: project_dir / "outputs" / video_id / "image_embeddings.npz"
     for video_id in video_files
 }
 
-image_index_path = image_index_paths["speech"]
+image_index_path = image_index_paths.get("speech")
 image_score_threshold = 0.28
 
 def suppress_nearby_hits(hits, min_gap_s=5.0):
@@ -102,6 +130,9 @@ def api_search_frames():
     else:
         return jsonify(error="Video không có chỉ mục hình ảnh."), 400
 
+    if not selected_paths:
+        return jsonify(hits=[])
+
     query_embedding = encode_frame_query(query.strip())
     hits = []
     for selected_path in selected_paths:
@@ -130,6 +161,9 @@ def api_search_multimodal():
         or not isinstance(speech_query, str) or not speech_query.strip()
     ):
         return jsonify(error="Bạn cần nhập mô tả hình ảnh và lời thoại."), 400
+
+    if image_index_path is None:
+        return jsonify(groups=[])
 
     visual_candidates = find_frame_candidates(
         image_index_path, visual_query.strip(), top_k=3

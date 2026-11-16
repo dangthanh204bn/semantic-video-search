@@ -24,13 +24,18 @@ The first indexing and search runs download the required Hugging Face models. Ol
 
 ### Index videos
 
-Place three local videos in the repository root using the filenames below. Use a video with Vietnamese speech for `speech.webm` and any two MP4 clips for visual search. Keep source videos and generated indexes on your machine.
+Place MP4 or WebM files in the repository root. Run the image indexer once for each file using its actual name. For example, start with `sample.mp4`.
+
+```powershell
+.\.venv\Scripts\python.exe -X utf8 .\index_video.py .\sample.mp4
+```
+
+Flask discovers videos with a complete image index at startup. Restart Flask after indexing a new video. Use distinct filename stems for your clips because each stem is a video ID and identifies an output directory. The ID `all` is reserved for the library-wide search. Source videos and generated indexes stay local.
+
+For the speech modes, place a clip with Vietnamese speech at `speech.webm`. Run its image indexing command first, then create the transcript and transcript embeddings.
 
 ```powershell
 .\.venv\Scripts\python.exe -X utf8 .\index_video.py .\speech.webm
-.\.venv\Scripts\python.exe -X utf8 .\index_video.py .\static.mp4
-.\.venv\Scripts\python.exe -X utf8 .\index_video.py .\sample.mp4
-
 .\.venv\Scripts\python.exe -X utf8 .\transcribe_video.py .\speech.webm
 .\.venv\Scripts\python.exe -X utf8 .\embed_transcript.py .\outputs\speech\transcript.csv
 ```
@@ -57,4 +62,4 @@ You can also search a single image index directly from PowerShell:
 - **Speech pipeline.** Faster-Whisper produces timestamped Vietnamese transcript segments. Multilingual E5 retrieves relevant segments. Qwen3 4B via Ollama generates an answer and selects evidence IDs. Python resolves the IDs to the original source timestamps.
 - **Playback.** Flask serves the video library and supports byte-range requests. The browser uses the result's video ID to select the file and seek to the supplied timestamp.
 
-The current web demo uses all three clips for visual search. The speech modes use `speech.webm`. Visual matches depend on the sampled frames and similarity threshold, so short actions can fall between samples.
+Visual search uses the discovered library. The speech modes use `speech.webm`. Visual matches depend on the sampled frames and similarity threshold, so short actions can fall between samples.
