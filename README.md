@@ -90,6 +90,23 @@ Omitting `video_id` selects `speech`. A video in the library without a transcrip
 
 Visual search uses the discovered library. Visual matches depend on the sampled frames and similarity threshold, so short actions can fall between samples.
 
+### Visual search evaluation
+
+The local evaluation uses seven queries across `speech.webm`, `static.mp4`, and `sample.mp4`. Visual search uses a score threshold of `0.28` and suppresses results whose start times are less than 5 seconds apart within the same video.
+
+| Measure | Result |
+| --- | --- |
+| Queries with a matching scene and a hit in the top three | 4/5 |
+| Queries with no matching scene and an empty result list | 1/2 |
+
+A hit must identify the expected video and overlap the annotated time span. The white tanker query missed the scene at **11.011–17.017 s** in `sample.mp4`. The toothbrushing query returned a handwashing frame at **10.003 s** in `speech.webm` with a score of **0.3142**.
+
+With Flask running, run the evaluation against the local demo clips. Edit the queries and expected intervals in [the evaluation script](evaluate_visual_search.py) when using different footage.
+
+```powershell
+.\.venv\Scripts\python.exe -X utf8 .\evaluate_visual_search.py
+```
+
 ---
 
 <a name="tieng-viet"></a>
@@ -181,3 +198,20 @@ Khi bỏ qua `video_id`, API dùng `speech`. Với video có trong thư viện n
 - **Phát video.** Flask phục vụ thư viện video và hỗ trợ yêu cầu tải từng phần tệp. Trình duyệt dùng mã video của kết quả để mở đúng tệp và tua tới mốc được trả về.
 
 Tìm kiếm hình ảnh chạy trên thư viện do Flask phát hiện. Kết quả phụ thuộc vào các khung hình được lấy mẫu và ngưỡng tương đồng. Một hành động rất ngắn có thể xảy ra giữa hai khung hình được lấy mẫu.
+
+### Đánh giá tìm kiếm hình ảnh
+
+Bộ đánh giá cục bộ gồm bảy truy vấn trên ba video `speech.webm`, `static.mp4` và `sample.mp4`. Tìm kiếm dùng ngưỡng điểm `0.28` và lọc các kết quả có mốc bắt đầu cách nhau dưới 5 giây trong cùng một video.
+
+| Tiêu chí | Kết quả |
+| --- | --- |
+| Truy vấn có cảnh thật và tìm được cảnh trong ba kết quả đầu | 4/5 |
+| Truy vấn không có cảnh khớp và trả danh sách rỗng | 1/2 |
+
+Một kết quả hợp lệ phải thuộc đúng video và giao với khoảng thời gian đã đối chiếu. Truy vấn xe bồn trắng bỏ sót cảnh ở **11.011–17.017 giây** trong `sample.mp4`. Truy vấn đánh răng trả nhầm cảnh rửa tay ở **10.003 giây** trong `speech.webm` với điểm **0.3142**.
+
+Giữ Flask đang chạy và dùng lệnh dưới đây để đánh giá trên ba video demo cục bộ. Nếu dùng video khác, cập nhật các truy vấn và khoảng thời gian mong đợi trong [script đánh giá](evaluate_visual_search.py).
+
+```powershell
+.\.venv\Scripts\python.exe -X utf8 .\evaluate_visual_search.py
+```
